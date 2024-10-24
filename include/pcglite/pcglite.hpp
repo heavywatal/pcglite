@@ -36,7 +36,7 @@
 
 namespace pcglite {
 
-namespace {
+namespace detail {
 
 template <class T> inline
 constexpr T unsigned_rotr(const T x, const unsigned s) noexcept {
@@ -70,7 +70,7 @@ template <> constexpr __uint128_t pcg_default_increment<__uint128_t>
 template <> constexpr __uint128_t pcg_default_state<__uint128_t>
   = constexpr_uint128(0xb8dc10e158a92392ULL, 0x98046df007ec0a53ULL);
 
-} // namespace
+} // namespace detail
 
 template <class UIntType>
 class pcg_engine {
@@ -82,7 +82,7 @@ class pcg_engine {
     static constexpr result_type min() {return 0u;}
     static constexpr result_type max() {return std::numeric_limits<result_type>::max();}
     static constexpr state_type default_seed = 0xcafef00dd15ea5e5ULL;
-    static constexpr state_type multiplier = pcg_default_multiplier<state_type>;
+    static constexpr state_type multiplier = detail::pcg_default_multiplier<state_type>;
 
     // constructors
     pcg_engine() = default;
@@ -126,8 +126,8 @@ class pcg_engine {
     }
 
   private:
-    state_type increment_ = pcg_default_increment<state_type>;
-    state_type state_ = pcg_default_state<state_type>;
+    state_type increment_ = detail::pcg_default_increment<state_type>;
+    state_type state_ = detail::pcg_default_state<state_type>;
 
 /////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////
 
@@ -156,7 +156,7 @@ class pcg_engine {
         constexpr unsigned st_digits = std::numeric_limits<state_type>::digits;
         constexpr unsigned res_digits = std::numeric_limits<result_type>::digits;
         constexpr unsigned spare_digits = st_digits - res_digits;
-        constexpr unsigned log2_res_digits = floor_log2(res_digits);
+        constexpr unsigned log2_res_digits = detail::floor_log2(res_digits);
         constexpr unsigned bottom_spare = sizeof(state_type) <= 8 ? spare_digits - log2_res_digits : 0u;
         constexpr unsigned xshift = (spare_digits + res_digits - bottom_spare) / 2u;
         constexpr unsigned rshift = st_digits - log2_res_digits;
@@ -164,7 +164,7 @@ class pcg_engine {
         internal ^= (internal >> xshift);
         result_type result = internal >> bottom_spare;
         const unsigned rot = state_ >> rshift;
-        return unsigned_rotr(result, rot);
+        return detail::unsigned_rotr(result, rot);
     }
 
     state_type advance(state_type delta) const {
