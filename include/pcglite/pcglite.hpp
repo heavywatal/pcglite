@@ -1,3 +1,8 @@
+// pcglite: a lightweight subset of pcg-cpp.
+//
+// Copyright 2024 Watal M. Iwasaki
+// SPDX-License-Identifier: MIT
+
 /*
  * PCG Random Number Generation for C++
  *
@@ -18,12 +23,6 @@
  * For additional information about the PCG random number generation scheme,
  * visit http://www.pcg-random.org/.
  */
-
-/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////
-//
-// pcglite: a lightweight subset of pcg-cpp.
-// <https://github.com/heavywatal/pcglite>
-//
 
 #pragma once
 #ifndef PCGLITE_PCGLITE_HPP_
