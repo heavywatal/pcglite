@@ -51,28 +51,28 @@ constexpr __uint128_t constexpr_uint128(uint64_t high, uint64_t low) {
     return (static_cast<__uint128_t>(high) << 64u) + low;
 }
 
-template <class T> constexpr T pcg_default_multiplier;
-template <class T> constexpr T pcg_default_increment;
-template <class T> constexpr T pcg_default_state;
+template <class T> constexpr T default_multiplier;
+template <class T> constexpr T default_increment;
+template <class T> constexpr T default_state;
 
-template <> constexpr uint64_t pcg_default_multiplier<uint64_t>
+template <> constexpr uint64_t default_multiplier<uint64_t>
   = 6364136223846793005ULL;
-template <> constexpr uint64_t pcg_default_increment<uint64_t>
+template <> constexpr uint64_t default_increment<uint64_t>
   = 1442695040888963407ULL;
-template <> constexpr uint64_t pcg_default_state<uint64_t>
+template <> constexpr uint64_t default_state<uint64_t>
   = 0x4d595df4d0f33173ULL;
 
-template <> constexpr __uint128_t pcg_default_multiplier<__uint128_t>
+template <> constexpr __uint128_t default_multiplier<__uint128_t>
   = constexpr_uint128(2549297995355413924ULL, 4865540595714422341ULL);
-template <> constexpr __uint128_t pcg_default_increment<__uint128_t>
+template <> constexpr __uint128_t default_increment<__uint128_t>
   = constexpr_uint128(6364136223846793005ULL, 1442695040888963407ULL);
-template <> constexpr __uint128_t pcg_default_state<__uint128_t>
+template <> constexpr __uint128_t default_state<__uint128_t>
   = constexpr_uint128(0xb8dc10e158a92392ULL, 0x98046df007ec0a53ULL);
 
 } // namespace detail
 
 template <class UIntType>
-class pcg_engine {
+class permuted_congruential_engine {
   public:
     using result_type = UIntType;
     using state_type = std::conditional_t<std::is_same_v<UIntType, uint32_t>,
@@ -81,16 +81,16 @@ class pcg_engine {
     static constexpr result_type min() {return 0u;}
     static constexpr result_type max() {return std::numeric_limits<result_type>::max();}
     static constexpr state_type default_seed = 0xcafef00dd15ea5e5ULL;
-    static constexpr state_type multiplier = detail::pcg_default_multiplier<state_type>;
+    static constexpr state_type multiplier = detail::default_multiplier<state_type>;
 
     // constructors
-    pcg_engine() = default;
-    pcg_engine(const pcg_engine&) = default;
-    pcg_engine(pcg_engine&&) = default;
-    explicit pcg_engine(state_type s) {seed(s);}
-    explicit pcg_engine(state_type s, state_type inc) {seed(s, inc);}
-    template <class SeedSeq, typename std::enable_if_t<!std::is_convertible_v<SeedSeq, state_type>>>
-    explicit pcg_engine(SeedSeq& q) {seed(q);}
+    permuted_congruential_engine() = default;
+    permuted_congruential_engine(const permuted_congruential_engine&) = default;
+    permuted_congruential_engine(permuted_congruential_engine&&) = default;
+    explicit permuted_congruential_engine(state_type s) {seed(s);}
+    explicit permuted_congruential_engine(state_type s, state_type inc) {seed(s, inc);}
+    template <class SeedSeq, std::enable_if_t<!std::is_convertible_v<SeedSeq, state_type>>>
+    explicit permuted_congruential_engine(SeedSeq& q) {seed(q);}
 
     void seed(state_type s) {
         state_ = s;
@@ -125,8 +125,8 @@ class pcg_engine {
     }
 
   private:
-    state_type increment_ = detail::pcg_default_increment<state_type>;
-    state_type state_ = detail::pcg_default_state<state_type>;
+    state_type increment_ = detail::default_increment<state_type>;
+    state_type state_ = detail::default_state<state_type>;
 
 /////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////
 
@@ -143,7 +143,7 @@ class pcg_engine {
         discard(-delta);
     }
 
-    state_type operator-(const pcg_engine& old) const {
+    state_type operator-(const permuted_congruential_engine& old) const {
         return distance(old.state_);
     }
 
@@ -155,10 +155,10 @@ class pcg_engine {
         constexpr unsigned st_digits = std::numeric_limits<state_type>::digits;
         constexpr unsigned res_digits = std::numeric_limits<result_type>::digits;
         constexpr unsigned spare_digits = st_digits - res_digits;
-        constexpr unsigned log2_res_digits = detail::floor_log2(res_digits);
-        constexpr unsigned bottom_spare = sizeof(state_type) <= 8 ? spare_digits - log2_res_digits : 0u;
+        constexpr unsigned op_digits = detail::floor_log2(res_digits);
+        constexpr unsigned bottom_spare = sizeof(state_type) <= 8 ? spare_digits - op_digits : 0u;
         constexpr unsigned xshift = (spare_digits + res_digits - bottom_spare) / 2u;
-        constexpr unsigned rshift = st_digits - log2_res_digits;
+        constexpr unsigned rshift = st_digits - op_digits;
         state_type internal = state_;
         internal ^= (internal >> xshift);
         result_type result = internal >> bottom_spare;
@@ -209,7 +209,7 @@ class pcg_engine {
 
     template <class CharT, class Traits, class T>
     friend std::basic_ostream<CharT, Traits>&
-    operator<<(std::basic_ostream<CharT, Traits>& ost, const pcg_engine<T>& x);
+    operator<<(std::basic_ostream<CharT, Traits>&, const permuted_congruential_engine<T>&);
 };
 
 template <class CharT, class Traits>
@@ -228,14 +228,14 @@ operator<<(std::basic_ostream<CharT, Traits>& ost, __uint128_t x) {
 
 template <class CharT, class Traits, class T>
 inline std::basic_ostream<CharT, Traits>&
-operator<<(std::basic_ostream<CharT, Traits>& ost, const pcg_engine<T>& x) {
+operator<<(std::basic_ostream<CharT, Traits>& ost, const permuted_congruential_engine<T>& x) {
     return ost << x.multiplier << " "
                << x.increment_ << " "
                << x.state_;
 }
 
-using pcg32 = pcg_engine<uint32_t>;
-using pcg64 = pcg_engine<uint64_t>;
+using pcg32 = permuted_congruential_engine<uint32_t>;
+using pcg64 = permuted_congruential_engine<uint64_t>;
 
 } // namespace pcglite
 

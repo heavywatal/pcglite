@@ -5,7 +5,7 @@
 #include <random>
 
 template <class T, class PCG>
-int test_eq(pcglite::pcg_engine<T>& origin, PCG& upstream, unsigned n = 3u) {
+int test_eq(pcglite::permuted_congruential_engine<T>& origin, PCG& upstream, unsigned n = 3u) {
     int ret = 0;
     std::cout << origin << std::endl;
     std::cout << upstream << std::endl;

@@ -8,11 +8,12 @@ the original C++ implementation of [PCG random number generator](https://www.pcg
 
 ### Features
 
-- A template class `pcg_engine<UIntType>` supports `uint32_t` and `uint64_t`.
-- Two aliases for specialized types: `pcglite::pcg32` and `pcglite::pcg64`.
+- A template class `permuted_congruential_engine<UIntType>` supports `uint32_t` and `uint64_t` output.
+- Two aliases for specialized classes: `pcglite::pcg32` and `pcglite::pcg64`.
 - Compliant to `UniformRandomBitGenerator` requirements;
   usable with various distributions in `<random>` as a drop-in replacement of the standard generators such as `std::mt19937`.
 - Single header.
+- CMake-ready.
 
 
 ### Dependency
