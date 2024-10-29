@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(pcglite
-  VERSION 0.1.0
+  VERSION 0.1.1
   LANGUAGES CXX)
 
 include(GNUInstallDirs)
@@ -27,12 +27,12 @@ install(EXPORT ${PROJECT_NAME}-config
   NAMESPACE ${PROJECT_NAME}::
 )
 
-set(version_file ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake)
+set(version_file ${PROJECT_NAME}-config-version.cmake)
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(${version_file}
   COMPATIBILITY AnyNewerVersion
 )
-install(FILES ${version_file}
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${version_file}
   DESTINATION ${config_destination}
 )
 
