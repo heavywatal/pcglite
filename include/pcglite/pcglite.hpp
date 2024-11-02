@@ -51,22 +51,22 @@ constexpr __uint128_t constexpr_uint128(uint64_t high, uint64_t low) {
     return (static_cast<__uint128_t>(high) << 64u) + low;
 }
 
-template <class T> constexpr T default_multiplier;
-template <class T> constexpr T default_increment;
-template <class T> constexpr T default_state;
+template <class T> inline constexpr T default_multiplier;
+template <class T> inline constexpr T default_increment;
+template <class T> inline constexpr T default_state;
 
-template <> constexpr uint64_t default_multiplier<uint64_t>
+template <> inline constexpr uint64_t default_multiplier<uint64_t>
   = 6364136223846793005ULL;
-template <> constexpr uint64_t default_increment<uint64_t>
+template <> inline constexpr uint64_t default_increment<uint64_t>
   = 1442695040888963407ULL;
-template <> constexpr uint64_t default_state<uint64_t>
+template <> inline constexpr uint64_t default_state<uint64_t>
   = 0x4d595df4d0f33173ULL;
 
-template <> constexpr __uint128_t default_multiplier<__uint128_t>
+template <> inline constexpr __uint128_t default_multiplier<__uint128_t>
   = constexpr_uint128(2549297995355413924ULL, 4865540595714422341ULL);
-template <> constexpr __uint128_t default_increment<__uint128_t>
+template <> inline constexpr __uint128_t default_increment<__uint128_t>
   = constexpr_uint128(6364136223846793005ULL, 1442695040888963407ULL);
-template <> constexpr __uint128_t default_state<__uint128_t>
+template <> inline constexpr __uint128_t default_state<__uint128_t>
   = constexpr_uint128(0xb8dc10e158a92392ULL, 0x98046df007ec0a53ULL);
 
 } // namespace detail
