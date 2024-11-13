@@ -43,11 +43,11 @@ constexpr T unsigned_rotr(const T x, const unsigned s) noexcept {
     return (x >> s) | (x << ((-s) % dig));
 }
 
-constexpr unsigned floor_log2(unsigned x) {
+constexpr unsigned floor_log2(unsigned x) noexcept {
     return x == 1 ? 0 : 1 + floor_log2(x >> 1);
 }
 
-constexpr __uint128_t constexpr_uint128(uint64_t high, uint64_t low) {
+constexpr __uint128_t constexpr_uint128(uint64_t high, uint64_t low) noexcept {
     return (static_cast<__uint128_t>(high) << 64u) + low;
 }
 
@@ -87,17 +87,17 @@ class permuted_congruential_engine {
     permuted_congruential_engine() = default;
     permuted_congruential_engine(const permuted_congruential_engine&) = default;
     permuted_congruential_engine(permuted_congruential_engine&&) = default;
-    explicit permuted_congruential_engine(state_type s) {seed(s);}
-    explicit permuted_congruential_engine(state_type s, state_type inc) {seed(s, inc);}
+    explicit permuted_congruential_engine(state_type s) noexcept {seed(s);}
+    explicit permuted_congruential_engine(state_type s, state_type inc) noexcept {seed(s, inc);}
     template <class SeedSeq, std::enable_if_t<!std::is_convertible_v<SeedSeq, state_type>>>
     explicit permuted_congruential_engine(SeedSeq& q) {seed(q);}
 
-    void seed(state_type s) {
+    void seed(state_type s) noexcept {
         state_ = s;
         state_ += increment_;
         bump();
     }
-    void seed(state_type s, state_type inc) {
+    void seed(state_type s, state_type inc) noexcept {
         increment_ = (inc << 1u) | 1u;
         seed(s);
     }
@@ -109,7 +109,7 @@ class permuted_congruential_engine {
         seed(data[0], data[1]);
     }
 
-    result_type operator()() {
+    result_type operator()() noexcept {
         if constexpr (sizeof(state_type) <= 8) {
             auto res = output();
             bump();
@@ -120,7 +120,7 @@ class permuted_congruential_engine {
         }
     }
 
-    void discard(unsigned long long n) {
+    void discard(unsigned long long n) noexcept {
         state_ = advance(n);
     }
 
@@ -131,7 +131,7 @@ class permuted_congruential_engine {
 /////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////
 
   public: // for pcg-test.cpp
-    result_type operator()(result_type upper_bound) {
+    result_type operator()(result_type upper_bound) noexcept {
         const result_type threshold = (max() - min() - upper_bound + 1u) % upper_bound;
         while (true) {
             result_type r = (*this)() - min();
@@ -139,11 +139,11 @@ class permuted_congruential_engine {
         }
     }
 
-    void backstep(state_type delta) {
+    void backstep(state_type delta) noexcept {
         discard(-delta);
     }
 
-    state_type operator-(const permuted_congruential_engine& old) const {
+    state_type operator-(const permuted_congruential_engine& old) const noexcept {
         return distance(old.state_);
     }
 
@@ -151,7 +151,7 @@ class permuted_congruential_engine {
     static constexpr unsigned streams_pow2() {return period_pow2() - 1u;}
 
   private:
-    result_type output() const {
+    result_type output() const noexcept {
         constexpr unsigned st_digits = std::numeric_limits<state_type>::digits;
         constexpr unsigned res_digits = std::numeric_limits<result_type>::digits;
         constexpr unsigned spare_digits = st_digits - res_digits;
@@ -166,7 +166,7 @@ class permuted_congruential_engine {
         return detail::unsigned_rotr(result, rot);
     }
 
-    state_type advance(state_type delta) const {
+    state_type advance(state_type delta) const noexcept {
         state_type cur_mult = multiplier;
         state_type cur_plus = increment_;
         state_type acc_mult = 1u;
@@ -184,7 +184,7 @@ class permuted_congruential_engine {
         return acc_mult * state_ + acc_plus;
     }
 
-    state_type distance(state_type cur_state) const {
+    state_type distance(state_type cur_state) const noexcept {
         state_type cur_mult = multiplier;
         state_type cur_plus = increment_;
         state_type the_bit = 1u;
@@ -202,7 +202,7 @@ class permuted_congruential_engine {
         return delta;
     }
 
-    void bump() {
+    void bump() noexcept {
         state_ *= multiplier;
         state_ += increment_;
     }

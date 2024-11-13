@@ -1,5 +1,6 @@
 set(source_files
   example.cpp
+  static.cpp
 )
 
 find_package(pcg)
