@@ -29,6 +29,8 @@
 #define PCGLITE_PCGLITE_HPP_
 
 #include <array>
+#include <charconv>
+#include <cstring>
 #include <ios>
 #include <limits>
 #include <type_traits>
@@ -207,10 +209,32 @@ class permuted_congruential_engine {
         state_ += increment_;
     }
 
+    template <class T>
+    friend bool
+    operator==(const permuted_congruential_engine<T>&, const permuted_congruential_engine<T>&) noexcept;
+
+    template <class T>
+    friend bool
+    operator!=(const permuted_congruential_engine<T>&, const permuted_congruential_engine<T>&) noexcept;
+
     template <class CharT, class Traits, class T>
     friend std::basic_ostream<CharT, Traits>&
     operator<<(std::basic_ostream<CharT, Traits>&, const permuted_congruential_engine<T>&);
+
+    template <class CharT, class Traits, class T>
+    friend std::basic_istream<CharT, Traits>&
+    operator>>(std::basic_istream<CharT, Traits>&, permuted_congruential_engine<T>&);
 };
+
+template <class T> bool
+operator==(const permuted_congruential_engine<T>& x, const permuted_congruential_engine<T>& y) noexcept {
+    return (x.state_ == y.state_) && (x.increment_ == y.increment_);
+}
+
+template <class T> bool
+operator!=(const permuted_congruential_engine<T>& x, const permuted_congruential_engine<T>& y) noexcept {
+    return !(x == y);
+}
 
 template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>&
@@ -226,12 +250,47 @@ operator<<(std::basic_ostream<CharT, Traits>& ost, __uint128_t x) {
     return ost;
 }
 
+template <class CharT, class Traits>
+std::basic_istream<CharT, Traits>&
+operator>>(std::basic_istream<CharT, Traits>& ist, __uint128_t& x) {
+    uint64_t high{}, low{};
+    char buffer[33];
+    ist.getline(buffer, 33, ' ');
+    const auto size = std::strlen(buffer); // ist.gcount() includes trailing \0
+    const auto end = buffer + size;
+    const auto begin_low = (size > 16) ? (end - 16) : buffer;
+    std::from_chars(buffer, begin_low, high, 16);
+    std::from_chars(begin_low, end, low, 16);
+    x = detail::constexpr_uint128(high, low);
+    return ist;
+}
+
 template <class CharT, class Traits, class T>
 inline std::basic_ostream<CharT, Traits>&
 operator<<(std::basic_ostream<CharT, Traits>& ost, const permuted_congruential_engine<T>& x) {
-    return ost << x.multiplier << " "
-               << x.increment_ << " "
-               << x.state_;
+    auto fillch = ost.fill();
+    auto flags = ost.flags(std::ios_base::dec | std::ios_base::left);
+    ost << x.multiplier << ' '
+        << x.increment_ << ' '
+        << x.state_;
+    ost.fill(fillch);
+    ost.flags(flags);
+    return ost;
+}
+
+template <class CharT, class Traits, class T>
+std::basic_istream<CharT, Traits>&
+operator>>(std::basic_istream<CharT, Traits>& ist, permuted_congruential_engine<T>& x) {
+    auto flags = ist.flags(std::ios_base::dec | std::ios_base::skipws);
+    typename permuted_congruential_engine<T>::state_type multiplier{}, increment{}, state{};
+    ist >> multiplier >> increment >> state;
+    if (!ist.fail()) {
+        if (multiplier != x.multiplier) ist.clear(std::ios_base::failbit);
+        x.increment_ = increment;
+        x.state_ = state;
+    }
+    ist.flags(flags);
+    return ist;
 }
 
 using pcg32 = permuted_congruential_engine<uint32_t>;
