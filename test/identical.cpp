@@ -113,14 +113,12 @@ int main() {
     ret |= ctor2();
     ret |= seed1();
     ret |= seed2();
+    ret |= seedseq();
     ret |= ctor0_64();
     ret |= ctor1_64();
     ret |= ctor2_64();
     ret |= seed1_64();
     ret |= seed2_64();
-    if (false) {// TODO
-      ret |= seedseq();
-      ret |= seedseq_64();
-    }
+    ret |= seedseq_64();
     return ret;
 }

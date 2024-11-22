@@ -28,7 +28,6 @@
 #ifndef PCGLITE_PCGLITE_HPP_
 #define PCGLITE_PCGLITE_HPP_
 
-#include <array>
 #include <charconv>
 #include <cstring>
 #include <ios>
@@ -71,7 +70,14 @@ template <> inline constexpr __uint128_t default_increment<__uint128_t>
 template <> inline constexpr __uint128_t default_state<__uint128_t>
   = constexpr_uint128(0xb8dc10e158a92392ULL, 0x98046df007ec0a53ULL);
 
+template <class state_type, int N = 2>
+union SeedSeqData {
+    state_type as_state_type[N];
+    uint32_t as_uint32_t[N * sizeof(state_type) / sizeof(uint32_t)];
+};
+
 } // namespace detail
+
 
 template <class UIntType>
 class permuted_congruential_engine {
@@ -106,9 +112,10 @@ class permuted_congruential_engine {
     template <class SeedSeq>
     std::enable_if_t<!std::is_convertible_v<SeedSeq, state_type>>
     seed(SeedSeq& q) {
-        std::array<state_type, 2u> data;
-        q.generate(data.begin(), data.end());
-        seed(data[0], data[1]);
+        detail::SeedSeqData<state_type> data{};
+        constexpr int len = sizeof(data.as_uint32_t) / sizeof(uint32_t);
+        q.generate(data.as_uint32_t, data.as_uint32_t + len);
+        seed(data.as_state_type[1], data.as_state_type[0]);
     }
 
     result_type operator()() noexcept {
