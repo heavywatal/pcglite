@@ -1,5 +1,6 @@
 #include <pcglite/pcglite.hpp>
 
+#include <limits>
 #include <type_traits>
 
 namespace {
@@ -12,6 +13,8 @@ void test_static() {
     static_assert(std::is_nothrow_copy_constructible_v<T>);
     static_assert(std::is_nothrow_move_constructible_v<T>);
     static_assert(std::is_nothrow_destructible_v<T>);
+    static_assert(T::min() == typename T::result_type{});
+    static_assert(T::max() == std::numeric_limits<typename T::result_type>::max());
     // static_assert(std::is_swappable_v<T>);
 }
 

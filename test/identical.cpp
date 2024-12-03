@@ -3,9 +3,28 @@
 
 #include <iostream>
 #include <random>
+#include <type_traits>
 
-template <class T, class PCG>
-int test_eq(pcglite::permuted_congruential_engine<T>& origin, PCG& upstream, unsigned n = 3u) {
+template <class UIntType>
+struct PCG {
+    using lite = pcglite::permuted_congruential_engine<UIntType>;
+    using itype = typename lite::state_type;
+    using cpp = std::conditional_t<
+      std::is_same_v<UIntType, uint32_t>,
+      pcg_detail::setseq_base<UIntType, itype, pcg_detail::xsh_rr_mixin>,
+      pcg_detail::setseq_base<UIntType, itype, pcg_detail::xsl_rr_mixin>
+    >;
+};
+
+template <class T> inline
+void test_static() {
+    static_assert(PCG<T>::lite::min() == PCG<T>::cpp::min());
+    static_assert(PCG<T>::lite::max() == PCG<T>::cpp::max());
+    static_assert(PCG<T>::lite::multiplier == pcg_detail::default_multiplier<typename PCG<T>::lite::state_type>::multiplier());
+}
+
+template <class Lite, class Cpp>
+int test_eq(Lite& origin, Cpp& upstream, unsigned n = 3u) {
     int ret = 0;
     std::cout << origin << std::endl;
     std::cout << upstream << std::endl;
@@ -20,105 +39,74 @@ int test_eq(pcglite::permuted_congruential_engine<T>& origin, PCG& upstream, uns
     return ret;
 }
 
+template <class T> inline
 int ctor0() {
-    pcglite::pcg32 origin;
-    pcg32 upstream;
+    typename PCG<T>::lite origin;
+    typename PCG<T>::cpp upstream;
     return test_eq(origin, upstream);
 }
 
+template <class T> inline
 int ctor1() {
-    pcglite::pcg32 origin(42u);
-    pcg32 upstream(42u);
+    const auto seed{42u};
+    typename PCG<T>::lite origin{seed};
+    typename PCG<T>::cpp upstream{seed};
     return test_eq(origin, upstream);
 }
 
+template <class T> inline
 int ctor2() {
-    pcglite::pcg32 origin(42u, 54u);
-    pcg32 upstream(42u, 54u);
+    const auto seed{42u}, stream{54u};
+    typename PCG<T>::lite origin{seed, stream};
+    typename PCG<T>::cpp upstream{seed, stream};
     return test_eq(origin, upstream);
 }
 
+template <class T> inline
 int seed1() {
-    pcglite::pcg32 origin;
-    pcg32 upstream;
+    const auto seed{42u};
+    typename PCG<T>::lite origin;
+    typename PCG<T>::cpp upstream;
     origin.seed(42u);
     upstream.seed(42u);
     return test_eq(origin, upstream);
 }
 
+template <class T> inline
 int seed2() {
-    pcglite::pcg32 origin;
-    pcg32 upstream;
-    origin.seed(42u, 54u);
-    upstream.seed(42u, 54u);
+    const auto seed{42u}, stream{54u};
+    typename PCG<T>::lite origin;
+    typename PCG<T>::cpp upstream;
+    origin.seed(seed, stream);
+    upstream.seed(seed, stream);
     return test_eq(origin, upstream);
 }
 
+template <class T> inline
 int seedseq() {
     std::seed_seq sseq{42u, 54u};
-    pcglite::pcg32 origin;
-    pcg32 upstream;
-    origin.seed(sseq);
-    upstream.seed(sseq);
-    return test_eq(origin, upstream);
-}
-
-int ctor0_64() {
-    pcglite::pcg64 origin;
-    pcg64 upstream;
-    return test_eq(origin, upstream);
-}
-
-int ctor1_64() {
-    pcglite::pcg64 origin(42u);
-    pcg64 upstream(42u);
-    return test_eq(origin, upstream);
-}
-
-int ctor2_64() {
-    pcglite::pcg64 origin(42u, 54u);
-    pcg64 upstream(42u, 54u);
-    return test_eq(origin, upstream);
-}
-
-int seed1_64() {
-    pcglite::pcg64 origin;
-    pcg64 upstream;
-    origin.seed(42u);
-    upstream.seed(42u);
-    return test_eq(origin, upstream);
-}
-
-int seed2_64() {
-    pcglite::pcg64 origin;
-    pcg64 upstream;
-    origin.seed(42u, 54u);
-    upstream.seed(42u, 54u);
-    return test_eq(origin, upstream);
-}
-
-int seedseq_64() {
-    std::seed_seq sseq{42u, 54u};
-    pcglite::pcg64 origin;
-    pcg64 upstream;
+    typename PCG<T>::lite origin;
+    typename PCG<T>::cpp upstream;
     origin.seed(sseq);
     upstream.seed(sseq);
     return test_eq(origin, upstream);
 }
 
 int main() {
+    test_static<uint32_t>();
+    test_static<uint64_t>();
     int ret = 0;
-    ret |= ctor0();
-    ret |= ctor1();
-    ret |= ctor2();
-    ret |= seed1();
-    ret |= seed2();
-    ret |= seedseq();
-    ret |= ctor0_64();
-    ret |= ctor1_64();
-    ret |= ctor2_64();
-    ret |= seed1_64();
-    ret |= seed2_64();
-    ret |= seedseq_64();
+    ret |= ctor0<uint32_t>();
+    ret |= ctor0<uint64_t>();
+    ret |= ctor1<uint32_t>();
+    ret |= ctor1<uint64_t>();
+    ret |= ctor2<uint32_t>();
+    ret |= ctor2<uint64_t>();
+    ret |= seed1<uint32_t>();
+    ret |= seed1<uint64_t>();
+    ret |= seed2<uint32_t>();
+    ret |= seed2<uint64_t>();
+    ret |= seedseq<uint32_t>();
+    ret |= seedseq<uint64_t>();
     return ret;
 }
