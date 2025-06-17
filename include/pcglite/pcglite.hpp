@@ -29,6 +29,7 @@
 #define PCGLITE_PCGLITE_HPP_
 
 #include <charconv>
+#include <cstdint>
 #include <cstring>
 #include <ios>
 #include <limits>
