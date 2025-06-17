@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.21)
 project(pcglite
   VERSION 0.2.0
   LANGUAGES CXX)
@@ -37,6 +37,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${version_file}
 )
 
 include(CTest)
-if(BUILD_TESTING AND "${CMAKE_SOURCE_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
+if(BUILD_TESTING AND PROJECT_IS_TOP_LEVEL)
   add_subdirectory(test)
 endif()

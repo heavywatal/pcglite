@@ -67,8 +67,8 @@ int seed1() {
     const auto seed{42u};
     typename PCG<T>::lite origin;
     typename PCG<T>::cpp upstream;
-    origin.seed(42u);
-    upstream.seed(42u);
+    origin.seed(seed);
+    upstream.seed(seed);
     return test_eq(origin, upstream);
 }
 
