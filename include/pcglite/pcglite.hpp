@@ -71,7 +71,7 @@ template <> inline constexpr __uint128_t default_increment<__uint128_t>
 template <> inline constexpr __uint128_t default_state<__uint128_t>
   = constexpr_uint128(0xb8dc10e158a92392ULL, 0x98046df007ec0a53ULL);
 
-template <class state_type, int N = 2>
+template <class state_type, unsigned N = 2>
 union SeedSeqData {
     state_type as_state_type[N];
     uint32_t as_uint32_t[N * sizeof(state_type) / sizeof(uint32_t)];
@@ -172,7 +172,7 @@ class permuted_congruential_engine {
         state_type internal = state_;
         internal ^= (internal >> xshift);
         auto result = static_cast<result_type>(internal >> bottom_spare);
-        const unsigned rot = state_ >> rshift;
+        const auto rot = static_cast<unsigned>(state_ >> rshift);
         return detail::unsigned_rotr(result, rot);
     }
 
@@ -249,7 +249,7 @@ std::basic_ostream<CharT, Traits>&
 operator<<(std::basic_ostream<CharT, Traits>& ost, __uint128_t x) {
     auto fillch = ost.fill('0');
     auto flags = ost.flags(std::ios_base::hex);
-    uint64_t high(x >> 64u);
+    auto high = static_cast<uint64_t>(x >> 64u);
     if (high) {ost << high;}
     ost.width(16);
     ost << static_cast<uint64_t>(x);
