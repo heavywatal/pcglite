@@ -171,7 +171,7 @@ class permuted_congruential_engine {
         constexpr unsigned rshift = st_digits - op_digits;
         state_type internal = state_;
         internal ^= (internal >> xshift);
-        result_type result = internal >> bottom_spare;
+        auto result = static_cast<result_type>(internal >> bottom_spare);
         const unsigned rot = state_ >> rshift;
         return detail::unsigned_rotr(result, rot);
     }
