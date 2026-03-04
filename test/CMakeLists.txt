@@ -1,14 +1,9 @@
 set(source_files
   example.cpp
+  identical.cpp
   static.cpp
   std.cpp
 )
-
-find_package(pcg)
-if(pcg_FOUND)
-  set(source_files ${source_files} identical.cpp)
-  link_libraries(pcg::pcg)
-endif()
 
 foreach(src IN LISTS source_files)
   cmake_path(GET src STEM name_we)
@@ -19,3 +14,15 @@ foreach(src IN LISTS source_files)
   target_compile_options(test-${name_we} PRIVATE -Wconversion -Wsign-conversion -Wshadow)
   add_test(NAME ${name_we} COMMAND $<TARGET_FILE:test-${name_we}>)
 endforeach()
+
+include(FetchContent)
+FetchContent_Declare(
+  pcg
+  URL https://github.com/imneme/pcg-cpp/archive/refs/heads/master.tar.gz
+  URL_HASH SHA256=88fb53e10566426e66e1b3967746c23e46395d4e6cfd57303ebab1ed2bb15cc9
+  DOWNLOAD_NO_PROGRESS TRUE
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(pcg)
+
+target_include_directories(test-identical PRIVATE ${pcg_SOURCE_DIR}/include)

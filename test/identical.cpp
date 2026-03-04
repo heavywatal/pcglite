@@ -1,5 +1,5 @@
 #include <pcglite/pcglite.hpp>
-#include <pcg/pcg_random.hpp>
+#include <pcg_random.hpp>
 
 #include <iostream>
 #include <random>
